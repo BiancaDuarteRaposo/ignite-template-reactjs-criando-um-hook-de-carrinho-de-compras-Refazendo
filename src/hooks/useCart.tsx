@@ -23,20 +23,61 @@ const CartContext = createContext<CartContextData>({} as CartContextData);
 
 export function CartProvider({ children }: CartProviderProps): JSX.Element {
   const [cart, setCart] = useState<Product[]>(() => {
-    // const storagedCart = Buscar dados do localStorage
+    const storagedCart = localStorage.getItem('@RocketShoes:cart')
 
-    // if (storagedCart) {
-    //   return JSON.parse(storagedCart);
-    // }
+    if (storagedCart) {
+      return JSON.parse(storagedCart);
+    }
 
     return [];
   });
 
   const addProduct = async (productId: number) => {
     try {
-      // TODO
+      // Cria um novo array para manter a imutabilidade do cart
+      const updatedCart = [...cart];
+      //verificar se o produto existente
+      const productExists = updatedCart.find(product => product.id === productId);
+      //verificar o stock/ "api.get()" serve para chamar a rota 
+      const stock = await api.get(`/stock/${productId}`);
+      //consulta qtd d produto do stock
+      const stockAmount = stock.data.amount;
+      //quantidade atual de produto no carrinho/ se o produto existe no carrinho ? passa o amount : se não é  0
+      const currentAmount = productExists ? productExists.amount : 0;
+      // quantidade desejada ao addproduct/ currentAmount(qtd atual)+1produto
+      const amount = currentAmount +1;
+
+      //Verifica se a quantidade desejada é maior que o stock no
+      if (amount>stockAmount) {
+        // mostra erro
+        toast.error('Quantidade solicitada fora de estoque');
+        // deve encerrar a função entao damos
+        return;
+      }
+      
+      // se o produto exixte dento do cart
+      if(productExists){
+        //identifica e adiciona +1 na qtd (amount)
+        productExists.amount = amount;
+      } else{ // se for produto novo
+        //buscar o produto na api.get()
+        const product = await api.get(`/product/${productId}`);
+        // pegar os dados da api e criar um campo amount com o valor de 1, como pr1meira add no cart do produto
+        const newproduct = {
+          ...product.data,
+          amount: 1
+        }
+
+        //atualizar o UpdatedCart colocando o newproduct
+        updatedCart.push(newproduct);
+      }
+      //manter as ações setando o carrinho
+      setCart(updatedCart)
+      //JSON.stringify(updatedCart) transforma o array, q é o carrinho, em string para "combinar" o setItem,que recebe string
+      localStorage.setItem('@RocketShoes:cart', JSON.stringify(updatedCart))
+
     } catch {
-      // TODO
+      toast.error('Erro na adição do produto');
     }
   };
 
