@@ -106,12 +106,47 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
   const updateProductAmount = async ({
     productId,
-    amount,
+    amount, //amount desejado
   }: UpdateProductAmount) => {
     try {
-      // TODO
+      //verificar se a qtdd do produto for menor = a 0
+      if (amount <= 0){
+        //sair da função
+        return;
+      } 
+
+      // verificar estock
+      const stock = await api.get(`/stock/${productId}`);
+      // chamar stockamout
+      const stockAmount = stock.data.amount;
+      
+      // se a amount for maior que o stockamount 
+      if (amount > stockAmount){
+        // sái da função retornando error
+        toast.error('Quantidade solicitada fora de estoque');
+        return;  
+      }
+      
+      //manter e acrescentar ao cart
+      const updatedCart =[...cart];
+      // procurar por produto manter no cart 
+      const productExists = updatedCart.find(product=> product.id === productId);
+
+      // se o produto existe no cart
+      if(productExists){
+        // acrescenta um na quantidade do produto
+        productExists.amount=amount;
+        //atualiza o cart
+        setCart(updatedCart);
+        localStorage.setItem('@RocketShoes:cart', JSON.stringify(updatedCart))
+      } else {
+        // se o produto não exixstit no cart 
+        throw Error
+      }
+
     } catch {
-      // TODO
+    
+      toast.error('Erro na alteração de quantidade do produto');
     }
   };
 
