@@ -45,10 +45,10 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       //quantidade atual de produto no carrinho/ se o produto existe no carrinho ? passa o amount : se não é  0
       const currentAmount = productExists ? productExists.amount : 0;
       // quantidade desejada ao addproduct/ currentAmount(qtd atual)+1produto
-      const amount = currentAmount +1;
+      const amount = currentAmount + 1;
 
       //Verifica se a quantidade desejada é maior que o stock no
-      if (amount>stockAmount) {
+      if (amount > stockAmount) {
         // mostra erro
         toast.error('Quantidade solicitada fora de estoque');
         // deve encerrar a função entao damos
@@ -59,20 +59,21 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       if(productExists){
         //identifica e adiciona +1 na qtd (amount)
         productExists.amount = amount;
+
       } else{ // se for produto novo
         //buscar o produto na api.get()
-        const product = await api.get(`/product/${productId}`);
+        const product = await api.get(`/products/${productId}`);
         // pegar os dados da api e criar um campo amount com o valor de 1, como pr1meira add no cart do produto
-        const newproduct = {
+        const newProduct = {
           ...product.data,
           amount: 1
         }
 
         //atualizar o UpdatedCart colocando o newproduct
-        updatedCart.push(newproduct);
+        updatedCart.push(newProduct);
       }
       //manter as ações setando o carrinho
-      setCart(updatedCart)
+      setCart(updatedCart);
       //JSON.stringify(updatedCart) transforma o array, q é o carrinho, em string para "combinar" o setItem,que recebe string
       localStorage.setItem('@RocketShoes:cart', JSON.stringify(updatedCart))
 
@@ -135,13 +136,13 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       // se o produto existe no cart
       if(productExists){
         // acrescenta um na quantidade do produto
-        productExists.amount=amount;
+        productExists.amount = amount;
         //atualiza o cart
         setCart(updatedCart);
-        localStorage.setItem('@RocketShoes:cart', JSON.stringify(updatedCart))
+        localStorage.setItem('@RocketShoes:cart', JSON.stringify(updatedCart));
       } else {
         // se o produto não exixstit no cart 
-        throw Error
+        throw Error();
       }
 
     } catch {
